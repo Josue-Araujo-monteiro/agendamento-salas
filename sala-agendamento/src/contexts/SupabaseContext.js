@@ -8,14 +8,14 @@ const supabase = createClient(supabaseUrl, supabaseAnonKey);
 
 const SupabaseContext = createContext();
 
+export function useSupabase() {
+  return useContext(SupabaseContext);
+}
+
 export function SupabaseProvider({ children }) {
   return (
     <SupabaseContext.Provider value={{ supabase }}>
       {children}
     </SupabaseContext.Provider>
   );
-}
-
-export function useSupabase() {
-  return useContext(SupabaseContext);
 }
