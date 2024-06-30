@@ -16,22 +16,39 @@ import background from '../assets/background.png';
 
 const theme = createTheme();
 
-function Login() {
+function SignUp() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [error, setError] = useState('');
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const { supabase } = useSupabase();
 
-  const handleLogin = async (e) => {
+  const handleSignUp = async (e) => {
     e.preventDefault();
+    if (password !== confirmPassword) {
+      setError('Passwords do not match');
+      return;
+    }
+
+    setIsSubmitting(true);
+    setError('');
+
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+      const { error } = await supabase.auth.signUp({ email, password });
       if (error) {
-        console.error('Error logging in:', error.message);
+        if (error.message === 'Email rate limit exceeded') {
+          setError('You have attempted to sign up too many times. Please try again later.');
+        } else {
+          setError(error.message);
+        }
       } else {
-        console.log('Logged in successfully:', data);
+        // Handle successful sign up
       }
     } catch (error) {
-      console.error('Unexpected error:', error);
+      setError('Unexpected error occurred');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -62,9 +79,9 @@ function Login() {
                 <LockOutlinedIcon />
               </Avatar>
               <Typography component="h1" variant="h5">
-                Login
+                Sign Up
               </Typography>
-              <Box component="form" onSubmit={handleLogin} sx={{ mt: 1 }}>
+              <Box component="form" onSubmit={handleSignUp} sx={{ mt: 1 }}>
                 <TextField
                   margin="normal"
                   required
@@ -89,23 +106,35 @@ function Login() {
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                 />
+                <TextField
+                  margin="normal"
+                  required
+                  fullWidth
+                  name="confirmPassword"
+                  label="Confirm Password"
+                  type="password"
+                  id="confirmPassword"
+                  value={confirmPassword}
+                  onChange={(e) => setConfirmPassword(e.target.value)}
+                />
+                {error && (
+                  <Typography color="error" variant="body2">
+                    {error}
+                  </Typography>
+                )}
                 <Button
                   type="submit"
                   fullWidth
                   variant="contained"
                   sx={{ mt: 3, mb: 2 }}
+                  disabled={isSubmitting}
                 >
-                  Sign In
+                  Sign Up
                 </Button>
                 <Grid container>
-                  <Grid item xs>
-                    <Link href="#" variant="body2">
-                      Forgot password?
-                    </Link>
-                  </Grid>
                   <Grid item>
-                    <Link href="/signup" variant="body2">
-                      {"Don't have an account? Sign Up"}
+                    <Link href="/" variant="body2">
+                      {"Already have an account? Sign In"}
                     </Link>
                   </Grid>
                 </Grid>
@@ -118,4 +147,4 @@ function Login() {
   );
 }
 
-export default Login;
+export default SignUp;
